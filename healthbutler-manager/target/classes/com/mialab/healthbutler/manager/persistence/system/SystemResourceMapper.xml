@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mialab.healthbutler.manager.persistence.system.SystemResourceMapper" >
+  <resultMap id="BaseResultMap" type="com.mialab.healthbutler.manager.domain.system.SystemResource" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="PID" property="pid" jdbcType="VARCHAR" />
+    <result column="TEXT" property="text" jdbcType="VARCHAR" />
+    <result column="SEQ" property="seq" jdbcType="DECIMAL" />
+    <result column="SRC" property="src" jdbcType="VARCHAR" />
+    <result column="DESCRIPT" property="descript" jdbcType="VARCHAR" />
+    <result column="ONOFF" property="onoff" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, PID, TEXT, SEQ, SRC, DESCRIPT, ONOFF
+  </sql>
+  
+  <select id="find" parameterType="string" resultMap="BaseResultMap">
+    SELECT a.*, b.ID as parentId, b.TEXT as parentText
+    FROM sys_resources a left join sys_resources b on a.PID= b.ID
+    WHERE 1=1
+    	<if test="value == null">
+			and a.PID is null
+		</if> 
+		<if test="value != null">
+			and a.PID=#{value}
+		</if> 
+    ORDER BY a.SEQ
+  </select>
+  
+  <select id="findBySrc" parameterType="string" resultMap="BaseResultMap">
+    SELECT ID, PID, TEXT, SEQ, SRC, DESCRIPT, ONOFF
+    FROM sys_resources
+    WHERE SRC=#{value}
+  </select>
+  
+  <select id="findRoleResources" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+		a.*
+	FROM
+		sys_role_resources b
+	LEFT JOIN sys_resources a ON a.ID = b.RESOURCES_ID
+	LEFT JOIN sys_role c ON c.ID = b.ROLE_ID
+	WHERE 1=1
+    AND a.src=#{src}
+    AND c.rid=#{groupId}
+  </select>
+  
+  <select id="findResourcesByRole" parameterType="string" resultMap="BaseResultMap">
+    SELECT a.*
+    FROM sys_resources a left join sys_role_resources b on a.id = b.resources_id 
+    WHERE b.role_id=#{value}
+  </select>
+  
+  <select flushCache="true" id="findRoleResource" parameterType="map" resultType="SystemResource">
+		SELECT a.*
+		FROM sys_resources a left join sys_role_resources b on a.id = b.resource_id
+		WHERE 1=1
+		AND b.role_id=#{groupId}
+		<if test="pid == null">
+			and a.pid is null
+		</if>
+		<if test="pid != null">
+			and a.pid=#{pid}
+		</if>
+		ORDER BY a.seq
+	</select>
+	
+  <select id="getSubTree" parameterType="string" resultMap="BaseResultMap" flushCache="true">
+    SELECT 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    FROM sys_resources t
+    WHERE 1=1
+    	<if test="value == null">
+			and t.pid is null
+		</if> 
+		<if test="value != null">
+			and t.pid=#{value}
+		</if> 
+    ORDER BY t.seq
+  </select>
+  
+  <insert id="save" parameterType="SystemResource">
+    insert into sys_resources (ID, PID, TEXT, 
+      SEQ, SRC, DESCRIPT, ONOFF)
+    values (#{id,jdbcType=VARCHAR}, #{pid,jdbcType=VARCHAR}, #{text,jdbcType=VARCHAR}, 
+      #{seq,jdbcType=DECIMAL}, #{src,jdbcType=VARCHAR}, #{descript,jdbcType=VARCHAR}, 
+      #{onoff,jdbcType=VARCHAR})
+  </insert>
+  
+  <update id="update" parameterType="SystemResource">
+     update sys_resources
+    <set >
+      <if test="pid != null" >
+        PID = #{pid,jdbcType=VARCHAR},
+      </if>
+      <if test="text != null" >
+        TEXT = #{text,jdbcType=VARCHAR},
+      </if>
+      <if test="seq != null" >
+        SEQ = #{seq,jdbcType=DECIMAL},
+      </if>
+      <if test="src != null" >
+        SRC = #{src,jdbcType=VARCHAR},
+      </if>
+      <if test="descript != null" >
+        DESCRIPT = #{descript,jdbcType=VARCHAR},
+      </if>
+      <if test="onoff != null" >
+        ONOFF = #{onoff,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <delete id="del" parameterType="string">
+      DELETE FROM sys_resources
+      WHERE
+      	ID = #{value}
+  </delete>
+  
+</mapper>

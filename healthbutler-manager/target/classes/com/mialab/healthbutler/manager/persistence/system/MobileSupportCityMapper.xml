@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mialab.healthbutler.manager.persistence.system.MobileSupportCityMapper">
+    
+  <cache eviction="FIFO" flushInterval="600000" size="512" readOnly="true" />
+     
+  <resultMap id="BaseResultMap" type="com.mialab.healthbutler.manager.domain.system.MobileSupportCity" >
+    <id column="city_id" property="cityId" jdbcType="INTEGER" />
+    <result column="index" property="index" jdbcType="SMALLINT" />
+    <result column="parent_id" property="parentId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="level" property="level" jdbcType="TINYINT" />
+    <result column="background_version" property="backgroundVersion" jdbcType="SMALLINT" />
+    <result column="background" property="background" jdbcType="VARCHAR" />
+    <result column="tag" property="tag" jdbcType="TINYINT" />
+    <result column="product_id" property="productId" jdbcType="INTEGER" />
+    <result column="cell_station_id" property="cellStationId" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    city_id, index, parent_id, name, level, background_version, background, tag, product_id, 
+    cell_station_id
+  </sql>
+ 
+  <select id="listCity" resultMap="BaseResultMap">
+    SELECT city_id, name
+    FROM mobile_support_citys
+    WHERE 1 = 1
+  </select>
+  
+  <select id="listCityById" parameterType="int" resultMap="BaseResultMap">
+    SELECT city_id, name, cell_station_id
+    FROM mobile_support_citys
+    WHERE 1 = 1
+    <if test="value != null and value != 0" >
+        AND city_id = #{value}
+    </if>
+  </select>
+  
+  <select id="listAppCitys" parameterType="int" resultMap="BaseResultMap">
+    SELECT city_id, name
+    FROM mobile_support_citys
+    WHERE 1 = 1 AND level>5
+    <if test="value != null and value != 0" >
+        AND city_id = #{value}
+    </if>
+    AND city_id NOT IN (SELECT DISTINCT city_id FROM app_city_info)
+  </select>  
+
+</mapper>

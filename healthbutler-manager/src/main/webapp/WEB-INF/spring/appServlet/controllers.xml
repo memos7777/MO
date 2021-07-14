@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- Maps '/' requests to the 'home' view -->
+	<mvc:view-controller path="/" view-name="/login" />
+	<mvc:view-controller path="/changepwd" view-name="passwordchange" />
+	<mvc:view-controller path="/report" view-name="passwordchange" />
+
+	<context:component-scan
+		base-package="com.mialab.healthbutler.manager.controller, 
+					  com.mialab.healthbutler.manager.persistence, 
+					  com.mialab.healthbutler.manager.service,
+					  com.mialab.healthbutler.manager.exception" />
+					  
+	<!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
+	<bean id="mappingJacksonHttpMessageConverter"
+		class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+		<property name="supportedMediaTypes">
+			<list>
+				<value>text/html;charset=UTF-8</value>
+			</list>
+		</property>
+	</bean>
+	
+<!-- 	<bean id="mappingJacksonHttpMessageConverter" -->
+<!-- 		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"> -->
+<!-- 		<property name="supportedMediaTypes"> -->
+<!-- 			<list> -->
+<!-- 				<value>text/html;charset=UTF-8</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+
+	<!-- ②：启动Spring MVC的注解功能，完成请求和注解POJO的映射，添加拦截器，类级别的处理器映射 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="interceptors">
+			<list>
+				<bean
+					class="com.mialab.healthbutler.manager.interceptor.AuthorizeInterceptor" />
+				<bean
+					class="com.mialab.healthbutler.manager.interceptor.EncodingInterceptor" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- ②：启动Spring MVC的注解功能，完成请求和注解POJO的映射， 配置一个基于注解的定制的WebBindingInitializer，解决日期转换问题，方法级别的处理器映射 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="cacheSeconds" value="0" />
+		<property name="webBindingInitializer">
+			<bean class="com.mialab.healthbutler.manager.util.MyWebBinding" />
+		</property>
+		<!-- 配置一下对json数据的转换 -->
+		<property name="messageConverters">
+			<list>
+				<!-- <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean> -->
+				<ref bean="mappingJacksonHttpMessageConverter" /><!-- json转换器 -->
+			</list>
+		</property>
+	</bean>
+
+	<bean id="multipartResolver"
+		class="com.mialab.healthbutler.manager.interceptor.CommonsMultipartResolver" />
+
+	<bean id="springExceptionHandler"
+		class="com.mialab.healthbutler.manager.exception.SpringExceptionHandler" />
+</beans>

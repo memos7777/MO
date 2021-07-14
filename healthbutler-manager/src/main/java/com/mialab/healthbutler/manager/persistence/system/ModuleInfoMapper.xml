@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mialab.healthbutler.manager.persistence.system.ModuleInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.mialab.healthbutler.manager.domain.system.ModuleInfo" >
+    <result column="module_id" property="moduleId" jdbcType="SMALLINT" />
+    <result column="module_version" property="moduleVersion" jdbcType="VARCHAR" />
+    <result column="module_name" property="moduleName" jdbcType="VARCHAR" />
+    <result column="module_key" property="moduleKey" jdbcType="VARCHAR" />
+    <result column="options" property="options" jdbcType="INTEGER" />
+    <result column="icon_version" property="iconVersion" jdbcType="INTEGER" />
+    <result column="icon_url" property="iconUrl" jdbcType="VARCHAR" />
+    <result column="module_type" property="moduleType" jdbcType="SMALLINT" />
+    <result column="module_level" property="moduleLevel" jdbcType="SMALLINT" />
+    <result column="module_url" property="moduleUrl" jdbcType="VARCHAR" />
+    <result column="display_client_version" property="displayClientVersion" jdbcType="VARCHAR" />
+    <result column="iphone_display_client_version" property="iphoneDisplayClientVersion" jdbcType="VARCHAR" />
+    <result column="run_client_version" property="runClientVersion" jdbcType="VARCHAR" />
+    <result column="iphone_run_client_version" property="iphoneRunClientVersion" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="tag" property="tag" jdbcType="SMALLINT" />
+  </resultMap>
+  
+  <select id="find" parameterType="map" resultMap="BaseResultMap">
+    SELECT a.*
+    FROM module_info a
+    WHERE 1 = 1
+    <if test="record.moduleName != null and record.moduleName != ''" >
+        AND position(#{record.moduleName} IN a.module_name) > 0 
+    </if>
+    <if test="record.moduleKey != null and record.moduleKey != ''" >
+        AND position(#{record.moduleKey} IN a.module_key) > 0 
+    </if>
+    LIMIT #{dg.rows} OFFSET #{dg.beginOffset} 
+  </select>
+  
+  <select id="findCount" parameterType="map" resultType="string">
+    SELECT count(*)
+    FROM module_info a
+    WHERE 1 = 1
+     <if test="record.moduleName != null and record.moduleName != ''" >
+        AND position(#{record.moduleName} IN a.module_name) > 0 
+    </if>
+    <if test="record.moduleKey != null and record.moduleKey != ''" >
+        AND position(#{record.moduleKey} IN a.module_key) > 0 
+    </if>
+  </select>
+  
+  <insert id="save" parameterType="com.mialab.healthbutler.manager.domain.system.ModuleInfo" >
+    insert into module_info (module_id, module_version, module_name, 
+      module_key, options, icon_version, 
+      icon_url, module_type, module_level, 
+      module_url, display_client_version, iphone_display_client_version, 
+      run_client_version, iphone_run_client_version, 
+      description, tag)
+    values (#{moduleId,jdbcType=SMALLINT}, #{moduleVersion,jdbcType=VARCHAR}, #{moduleName,jdbcType=VARCHAR}, 
+      #{moduleKey,jdbcType=VARCHAR}, #{options,jdbcType=INTEGER}, #{iconVersion,jdbcType=INTEGER}, 
+      #{iconUrl,jdbcType=VARCHAR}, #{moduleType,jdbcType=SMALLINT}, #{moduleLevel,jdbcType=SMALLINT}, 
+      #{moduleUrl,jdbcType=VARCHAR}, #{displayClientVersion,jdbcType=VARCHAR}, #{iphoneDisplayClientVersion,jdbcType=VARCHAR}, 
+      #{runClientVersion,jdbcType=VARCHAR}, #{iphoneRunClientVersion,jdbcType=VARCHAR}, 
+      #{description,jdbcType=VARCHAR}, #{tag,jdbcType=SMALLINT})
+  </insert>
+ 
+ <update id="update" parameterType="ModuleInfo">
+     update module_info
+    <set >
+      <if test="moduleId != null" >
+        module_id = #{moduleId,jdbcType=INTEGER},
+      </if>
+      <if test="moduleVersion != null" >
+        module_version = #{moduleVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="moduleName != null" >
+        module_name = #{moduleName,jdbcType=VARCHAR},
+      </if>
+      <if test="moduleKey != null" >
+        module_key = #{moduleKey,jdbcType=VARCHAR},
+      </if>
+      <if test="options != null" >
+        options = #{options,jdbcType=INTEGER},
+      </if>
+      <if test="iconVersion != null" >
+        icon_version = #{iconVersion,jdbcType=INTEGER},
+      </if>
+      <if test="iconUrl != null" >
+        icon_url = #{iconUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="moduleType != null" >
+        module_type = #{moduleType,jdbcType=INTEGER},
+      </if>
+      <if test="moduleLevel != null" >
+        module_level = #{moduleLevel,jdbcType=INTEGER},
+      </if>
+      <if test="moduleUrl != null" >
+        module_url = #{moduleUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="displayClientVersion != null" >
+        display_client_version = #{displayClientVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="iphoneDisplayClientVersion != null" >
+        iphone_display_client_version = #{iphoneDisplayClientVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="runClientVersion != null" >
+        run_client_version = #{runClientVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="iphoneRunClientVersion != null" >
+        iphone_run_client_version = #{iphoneRunClientVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="tag != null" >
+        tag = #{tag,jdbcType=TINYINT},
+      </if>
+    </set>
+    where module_id = #{moduleId,jdbcType=INTEGER}
+  </update>
+  
+  <update id="remove" parameterType="java.lang.Integer">
+      UPDATE module_info
+      SET 
+      	tag = 0
+      WHERE
+      	module_id = #{value}
+  </update>
+  
+</mapper>

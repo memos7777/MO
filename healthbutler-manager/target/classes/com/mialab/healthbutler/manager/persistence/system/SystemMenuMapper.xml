@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mialab.healthbutler.manager.persistence.system.SystemMenuMapper">
+
+	<resultMap id="BaseResultMap" type="com.mialab.healthbutler.manager.domain.system.SystemMenu">
+		<id column="ID" jdbcType="VARCHAR" property="id" />
+		<result column="PID" jdbcType="VARCHAR" property="pid" />
+		<result column="TEXT" jdbcType="VARCHAR" property="text" />
+		<result column="ICONCLS" jdbcType="VARCHAR" property="iconcls" />
+		<result column="SRC" jdbcType="VARCHAR" property="src" />
+		<result column="SEQ" jdbcType="DECIMAL" property="seq" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, PID, TEXT, ICONCLS, SRC, SEQ
+	</sql>
+
+	<select flushCache="true" id="getTree" parameterType="string"
+		resultType="SystemMenu">
+		SELECT ID, PID, TEXT, ICONCLS, SRC, SEQ
+		FROM sys_menu t
+		WHERE t.ID=#{value}
+		ORDER BY t.SEQ
+	</select>
+
+ 	<select flushCache="true" id="getSubTree" parameterType="string"
+		resultType="SystemMenu">
+		SELECT ID, PID, TEXT, ICONCLS, SRC, SEQ
+		FROM sys_menu t
+		WHERE 1=1
+		<if test="value == null">
+			and t.PID is null
+		</if>
+		<if test="value != null">
+			and t.PID = #{value}
+		</if>
+		ORDER BY t.SEQ
+	</select> 
+	
+<!-- <select flushCache="true" id="getSubTree" parameterType="string"
+		resultType="SystemMenu">
+		SELECT ID, PID, TEXT, ICONCLS, SRC, SEQ
+		FROM sys_menu t
+		WHERE 1=1
+		<if test=" _parameter == null">
+			and t.PID is null
+		</if>
+		<if test=" _parameter != null">
+			and t.PID = #{ _parameter}
+		</if>
+		ORDER BY t.SEQ
+	</select>  -->	
+
+	<select flushCache="true" id="findRoleMenu" parameterType="map"
+		resultType="SystemMenu">
+		SELECT
+			a.*
+		FROM
+			sys_role_menu b, sys_menu a, sys_role c
+		WHERE 1=1
+		AND a.ID = b.menu_id
+		AND c.ID = b.role_id
+		AND c.RID=#{groupId}::integer
+		<if test="pid == null">
+			and a.pid is null
+		</if>
+		<if test="pid != null">
+			and a.PID=#{pid}
+		</if>
+		ORDER BY a.seq
+	</select>
+
+	<select id="find" parameterType="string" resultMap="BaseResultMap">
+		SELECT a.*, b.ID as parentId, b.TEXT as parentText
+		FROM sys_menu a left join sys_menu b on a.PID= b.ID
+		WHERE 1=1
+		<if test="value == null">
+			and a.PID is null
+		</if>
+		<if test="value != null">
+			and a.PID=#{value}
+		</if>
+		ORDER BY a.SEQ
+	</select>
+
+	<select id="findMenusByRole" parameterType="string" resultMap="BaseResultMap">
+	    SELECT a.*
+	    FROM sys_menu a left join sys_role_menu b on a.ID = b.menu_id 
+	    WHERE b."role_id"=#{value}
+	</select>
+  
+	<insert id="save" parameterType="SystemMenu">
+		insert into sys_menu (ID, PID, TEXT,
+		ICONCLS, SRC, SEQ)
+		values (#{id,jdbcType=VARCHAR}, #{pid,jdbcType=VARCHAR},
+		#{text,jdbcType=VARCHAR},
+		#{iconcls,jdbcType=VARCHAR}, #{src,jdbcType=VARCHAR}, #{seq,jdbcType=DECIMAL})
+	</insert>
+
+	<update id="update" parameterType="SystemMenu">
+		update sys_menu
+		<set>
+			<if test="pid != null">
+				PID = #{pid,jdbcType=VARCHAR},
+			</if>
+			<if test="text != null">
+				TEXT = #{text,jdbcType=VARCHAR},
+			</if>
+			<if test="iconcls != null">
+				ICONCLS = #{iconcls,jdbcType=VARCHAR},
+			</if>
+			<if test="src != null">
+				SRC = #{src,jdbcType=VARCHAR},
+			</if>
+			<if test="seq != null">
+				SEQ = #{seq,jdbcType=DECIMAL},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<delete id="del" parameterType="string">
+		DELETE FROM sys_menu
+		WHERE
+		ID = #{value}
+	</delete>
+</mapper>

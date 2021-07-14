@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mialab.healthbutler.manager.persistence.system.SystemUserMapper" >
+  <resultMap id="BaseResultMap" type="com.mialab.healthbutler.manager.domain.system.SystemUser" >
+    <id column="account_id" property="accountId" jdbcType="INTEGER" />
+    <result column="account_name" property="accountName" jdbcType="VARCHAR" />
+    <result column="account_Pwd" property="accountPwd" jdbcType="VARCHAR" />
+    <result column="true_name" property="trueName" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="VARCHAR" />
+    <result column="birthday" property="birthday" jdbcType="TIMESTAMP" />
+    <result column="dept" property="dept" jdbcType="VARCHAR" />
+    <result column="office_phone" property="officePhone" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="is_del" property="isDel" jdbcType="BIT" />
+    <result column="entry_number" property="entryNumber" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="pwdb" property="pwdb" jdbcType="VARCHAR" />
+    <result column="group_id" property="groupId" jdbcType="INTEGER" />
+    <result column="city_id" property="cityId" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    account_id, account_name, account_Pwd, true_name, sex, birthday, dept, office_phone, 
+    mobile, email, is_del, entry_number, create_time, pwdb, group_id,city_id
+  </sql>
+  
+  <select id="find" parameterType="map" resultMap="BaseResultMap">
+    SELECT 'false' as QUERYID, a.*, b.group_id as groupId, c.text as groupName, d.name as cityName
+    FROM account a 
+    LEFT JOIN account_group b ON a.account_id=b.account_id
+    LEFT JOIN sys_role c      ON c.rid = b.group_id 
+    LEFT JOIN mobile_support_citys d ON d.city_id=a.city_id
+    WHERE a.is_del = 0
+    <if test="record.accountName != null" >
+        AND AND a.account_name LIKE '%'||#{record.accountName}||'%'
+    </if>
+    LIMIT #{dg.rows} OFFSET #{dg.beginOffset} 
+  </select>
+  
+  <select id="findCount" parameterType="map" resultType="string">
+    SELECT count(*)
+    FROM account
+    WHERE is_del = 0
+    <if test="record.accountName != null" >
+        AND AND a.account_name LIKE '%'||#{record.accountName}||'%'
+    </if>
+  </select>
+  
+  <select id="findByName" parameterType="string" resultMap="BaseResultMap">
+    SELECT 'false' as QUERYID, a.*, b.group_id as groupId
+    FROM account a LEFT JOIN account_group b ON a.account_id=b.account_id
+    WHERE a.is_del = 0
+    AND a.account_name = #{value}
+  </select>
+  
+  <insert id="save" parameterType="SystemUser" useGeneratedKeys="true">
+	  <!-- <selectKey resultType="java.lang.Integer" keyProperty="accountId" order="AFTER" >
+	    SELECT LAST_INSERT_ID() as accountId
+	  </selectKey> -->
+	  
+	  <selectKey keyProperty="accountId" resultType="int" order="BEFORE">
+			 SELECT nextval('account_account_id_seq'::regclass) as account_id  
+		</selectKey>  
+    insert into account (account_id,account_name, account_pwd, 
+      true_name, sex, birthday, 
+      dept, office_phone, mobile, 
+      email, is_del, entry_number, 
+      create_time, pwdb, city_id)
+    values (#{accountId},#{accountName,jdbcType=VARCHAR}, #{accountPwd,jdbcType=VARCHAR}, 
+      #{trueName,jdbcType=VARCHAR}, #{sex,jdbcType=VARCHAR}, #{birthday,jdbcType=TIMESTAMP}, 
+      #{dept,jdbcType=VARCHAR}, #{officePhone,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, 0, #{entryNumber,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{pwdb,jdbcType=VARCHAR}, #{cityId,jdbcType=INTEGER})
+  </insert>
+  
+  <insert id="saveAccountGroup" parameterType="SystemUser">
+    <selectKey keyProperty="account_group_id" resultType="int" order="BEFORE">
+			 SELECT nextval('account_group_account_group_id_seq'::regclass) as account_group_id  
+		</selectKey>  
+    insert into account_group (account_id, account_name, group_id, create_time)
+    values (#{accountId,jdbcType=INTEGER}, #{accountName,jdbcType=VARCHAR},
+    #{groupId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+  <update id="update" parameterType="SystemUser">
+      update account
+    <set >
+      <if test="accountName != null" >
+        account_name = #{accountName,jdbcType=VARCHAR},
+      </if>
+      <if test="accountPwd != null and accountPwd != ''" >
+        account_Pwd = #{accountPwd,jdbcType=VARCHAR},
+      </if>
+      <if test="trueName != null" >
+        true_name = #{trueName,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null" >
+        sex = #{sex,jdbcType=VARCHAR},
+      </if>
+      <if test="birthday != null" >
+        birthday = #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dept != null" >
+        dept = #{dept,jdbcType=VARCHAR},
+      </if>
+      <if test="officePhone != null" >
+        office_phone = #{officePhone,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null" >
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="isDel != null" >
+        is_del = #{isDel,jdbcType=BIT}::integer,
+      </if>
+      <if test="entryNumber != null" >
+        entry_number = #{entryNumber,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="pwdb != null and pwdb != ''" >
+        pwdb = #{pwdb,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null" >
+        city_id = #{cityId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </update>
+  
+  <update id="updateAccountGroup" parameterType="SystemUser">
+      update account_group
+    <set >
+      <if test="groupId != null" >
+        group_id = #{groupId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where account_id = #{accountId,jdbcType=INTEGER}
+  </update>
+  
+  <update id="remove" parameterType="java.lang.Integer">
+      UPDATE account
+      SET 
+      	is_del = 1
+      WHERE
+      	account_id = #{value}
+  </update>
+  
+  <delete id="removeAccountGroup" parameterType="java.lang.Integer">
+      DELETE FROM account_group
+      WHERE
+      	account_id = #{value}
+  </delete>
+  
+</mapper>
